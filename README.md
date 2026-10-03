@@ -38,7 +38,7 @@ Source: [`data/Shipping_Revenue_Practice_Data.xlsx`](data/Shipping_Revenue_Pract
 |---|---|---|
 | 0 | Qlik Cloud setup, upload data | ✅ Done |
 | 1 | First app: KPIs, revenue by trade lane, filters | ✅ Done |
-| 2 | Data model: link Customers + Targets, actual vs target | ⏳ Planned |
+| 2 | Data model: link Customers + Targets, actual vs target | ✅ Done |
 | 3 | Revenue Steering dashboard (3 sheets, master items, set analysis) | ⏳ Planned |
 | 4 | Campaign adoption report | ⏳ Planned |
 | 5 | Storytelling: bookmarks, Qlik story, export to Excel / PowerPoint | ⏳ Planned |
@@ -103,7 +103,76 @@ Source: [`data/Shipping_Revenue_Practice_Data.xlsx`](data/Shipping_Revenue_Pract
 
 ## Project 2 — Data model: actual vs target
 
-*Coming soon.*
+**Goal:** link three tables into one data model and answer the steering question *"Did we hit target — and where not?"*
+
+### What I did
+
+1. Added the **Customers** and **Targets** tables to the app.
+2. **Associated the tables** in the Data manager on their shared keys — a star-schema-style model with Bookings (facts) in the centre:
+
+   ```
+   Targets ──(LaneMonthKey)── Bookings ──(Customer)── Customers
+   ```
+
+3. Built a new sheet **Actual vs Target** with three KPIs:
+
+   | KPI | Expression |
+   |---|---|
+   | Actual revenue (USD) | `Sum(TEU * RatePerTEU_USD)` |
+   | Target revenue (USD) | `Sum(TargetRevenue_USD)` |
+   | Variance vs target | `Sum(TEU * RatePerTEU_USD) / Sum(TargetRevenue_USD) - 1` |
+
+4. **Actual vs target by trade lane** — grouped horizontal bar chart.
+5. **Variance % by trade lane** — sorted best to worst, coloured with an expression (green = above target, red = below):
+   ```
+   If(Sum(TEU * RatePerTEU_USD) / Sum(TargetRevenue_USD) - 1 < 0, '#C0392B', '#2E8B57')
+   ```
+6. **Revenue by customer region** — only possible because of the Customer link (Region lives in Customers, revenue in Bookings).
+7. Wrote **action titles** that state the conclusion, e.g. *"Asia–N. Europe −3.2% vs target"*.
+
+### Screenshots
+
+**Data model — three associated tables**
+![Data model](screenshots/p2-data-model.png)
+
+**Actual vs Target sheet**
+![Actual vs Target](screenshots/p2-actual-vs-target.png)
+
+### Results
+
+| Trade lane | Actual (USD) | Target (USD) | Variance |
+|---|---|---|---|
+| Transatlantic | 17.03M | 16.68M | **+2.1%** |
+| Middle East – India | 5.54M | 5.53M | +0.2% |
+| Transpacific | 9.36M | 9.35M | +0.1% |
+| Latin America | 12.20M | 12.24M | −0.3% |
+| Intra-Asia | 1.47M | 1.48M | −0.7% |
+| Asia – North Europe | 9.46M | 9.77M | **−3.2%** |
+| **Total** | **55.07M** | **55.06M** | **0.0%** |
+
+### Key insights
+
+- **The total hides the story.** Overall revenue is exactly on target (0.0%), but lanes range from **+2.1% (Transatlantic)** to **−3.2% (Asia – North Europe)**. Without the lane breakdown, a ~$300k shortfall on Asia – North Europe would go unnoticed.
+- **Europe-based customers generate over half of revenue** (~28.5M of 55M), followed by North America (~11.6M).
+- **Chart choice changes the message.** In the grouped actual-vs-target chart all bars look nearly equal; the variance chart makes the gap obvious in one second.
+
+### What went wrong and how I fixed it
+
+1. **A table disappeared before loading.** When adding Customers and Targets from the same Excel file, I unticked Bookings because it was "already loaded". In Qlik's *Add data* dialog, the ticked tables define *everything* the app will contain from that file — unticking means **delete**. The Data manager showed Bookings as *"deleted, will be removed at next reload"*. Because changes only apply on **Load data**, nothing was lost yet: I re-added all three tables, verified the field count (10 incl. the calculated `BookingMonth`), and only then loaded.
+   *Lesson: always review pending changes before loading — like reviewing a diff before deploying.*
+2. **Fields were renamed automatically** (`Bookings.Customer`, `Bookings.LaneMonthKey`). Qlik *qualifies* field names so tables don't link without approval. I applied the recommended associations explicitly and confirmed *Unassociated tables: 0*.
+3. **Stacked vs grouped bars.** Switching the chart to horizontal accidentally made it **stacked**, adding actual + target into a meaningless 35M+ bar. Fixed by switching back to **grouped**.
+   *Lesson: stacked = parts of a whole; grouped = comparison.*
+4. **Hidden categories.** Charts with too little space showed only 4 of 6 lanes behind a scrollbar — including hiding the worst performer. Fixed by resizing so every lane is visible.
+5. **Regression check.** After changing the data model, I re-checked the Project 1 sheet to confirm its KPIs still showed the same values.
+
+### What I learned
+
+- Associations, keys and a star-schema data model
+- Measures that combine tables (`TargetRevenue_USD` from Targets, revenue from Bookings)
+- Variance % and expression-based colours (`If()` + hex colour codes)
+- Number formatting (percentages), custom sorting, grouped vs stacked charts
+- Action titles and layout checks for management readers
 
 ## Project 3 — Revenue Steering dashboard
 
