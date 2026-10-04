@@ -41,7 +41,7 @@ Source: [`data/Shipping_Revenue_Practice_Data.xlsx`](data/Shipping_Revenue_Pract
 | 2 | Data model: link Customers + Targets, actual vs target | ✅ Done |
 | 3 | Revenue Steering dashboard (master items, monthly trend, set analysis) | ✅ Done |
 | 4 | Campaign adoption report | ✅ Done |
-| 5 | Storytelling: bookmarks, Qlik story, export to Excel / PowerPoint | ⏳ Planned |
+| 5 | Storytelling: bookmarks, Excel export (XLOOKUP, pivot), management summary in PowerPoint | ✅ Done |
 
 ---
 
@@ -322,9 +322,76 @@ Source: [`data/Shipping_Revenue_Practice_Data.xlsx`](data/Shipping_Revenue_Pract
 - Adoption tracking as a business case: reach (adoption %) vs usage (quotes)
 - Building a compact one-screen layout: KPIs on top, trend + breakdown below
 
+---
+
 ## Project 5 — Storytelling and export
 
-*Coming soon.*
+**Goal:** turn the dashboard into something management can act on: saved views for meetings, an Excel file for colleagues, and a three-slide summary that leads with the conclusion.
+
+### What I did
+
+**1. Bookmarks.** I saved three views, each with its selection and sheet location, so I can jump straight to a finding in a meeting:
+
+| Bookmark | Sheet | Selection | What it shows |
+|---|---|---|---|
+| July miss by lane | Actual vs Target | BookingMonth = Jul 2026 | Transatlantic **−8.0%** in July, despite being the best lane YTD (+2.1%) |
+| Reefer customers | Customers | CargoType = Reefer | Top 3 customers ≈ **85%** of reefer revenue |
+| Lagging regions | Campaign Adoption | Region = Latin America, Middle East | 66.7% adoption: **15 reps** away from the leading regions |
+
+**2. Excel export and analysis.** I downloaded the top-10 customer table from Qlik and worked with it in Excel ([`data/top10_customers.xlsx`](data/top10_customers.xlsx)):
+- **Share of revenue** with an absolute reference: `=B2/SUM($B$2:$B$11)`
+- **Region** looked up from a second sheet: `=XLOOKUP(A2,Customers!A:A,Customers!B:B,"Not found")`
+- **PivotTable** of revenue by region (Europe ≈ 53% of top-10 revenue), which matches the Qlik region chart
+
+**3. Management summary (3 slides).** Every slide title is the conclusion, so reading the titles alone tells the story:
+1. *YTD revenue on target, but a July miss and concentration risks need action*
+2. *July shortfall was a volume problem: rates peaked, but too few containers*
+3. *Protect key reefer accounts; close the tool gap in LatAm and the Middle East*
+
+### Screenshots
+
+**Bookmarks**
+![Bookmarks](screenshots/p5-bookmarks.png)
+
+**Excel: share of revenue and XLOOKUP**
+![Excel XLOOKUP](screenshots/p5-excel-xlookup.png)
+
+**Excel: PivotTable by region**
+![Excel pivot](screenshots/p5-excel-pivot.png)
+
+**Management summary slides**
+![Slides](screenshots/p5-slides.png)
+
+### Key insights
+
+- **Drill-down changes the story.** Transatlantic is the best lane year-to-date (+2.1%) but had the worst July (−8.0%, about −$185k). Only a monthly view shows this.
+- **Reefer revenue is highly concentrated.** Three customers make up ~85% of it, so key-account management and reefer equipment planning are linked.
+- **The adoption gap is small and fixable.** Training about 15 reps in Latin America and the Middle East would bring them to the level of Europe and North America.
+
+### What went wrong and how I fixed it
+
+1. **A selection leaked into the next bookmark.** After creating bookmark 1, July *and* a clicked trade lane were still selected, so the Customers table showed only Transatlantic July revenue (2.14M). I now **clear selections before every bookmark** and check the selection bar before saving.
+2. **The share-of-revenue formulas showed as text.** The column exported from Qlik was formatted as *Text*, so Excel stored `=B2/SUM(...)` as words and never calculated it. A quick test (`=1+1` in an empty cell) showed that Excel itself worked and the column format was the problem. I set the column to *General*, re-entered the formula, and then applied percentage format.
+   *Lesson: with exported data, check cell formats before writing formulas.*
+3. **Reefer share showed 100% while Reefer was selected.** The numerator is fixed to reefer by set analysis, and the denominator follows the selection, so reefer ÷ reefer = 100%. It's correct behaviour, and a good reminder to know which parts of a formula respond to selections.
+
+### What I learned
+
+- Bookmarks as a meeting tool (selection + sheet location)
+- Moving between tools: Qlik → Excel (absolute references, XLOOKUP across sheets, PivotTables)
+- Answer-first storytelling: action titles, evidence, recommended actions
+- Debugging systematically: isolate whether a problem is local (one column) or global (the whole sheet)
+
+---
+
+## Summary of skills
+
+| Area | Skills practised |
+|---|---|
+| Qlik Sense | Data loading, calculated fields, associations / star schema, KPIs, bar, line and table charts, master items, set analysis, dollar expansion, Top-N limits, bookmarks |
+| Analysis | Actual vs target variance, volume vs rate effects, customer concentration, flow vs snapshot metrics, adoption tracking |
+| Excel | Absolute references, XLOOKUP, PivotTables, cleaning exported data |
+| Communication | Action titles, answer-first management summary, documenting mistakes and fixes |
 
 ---
 
