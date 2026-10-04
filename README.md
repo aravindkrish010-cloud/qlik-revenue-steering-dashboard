@@ -39,7 +39,7 @@ Source: [`data/Shipping_Revenue_Practice_Data.xlsx`](data/Shipping_Revenue_Pract
 | 0 | Qlik Cloud setup, upload data | ✅ Done |
 | 1 | First app: KPIs, revenue by trade lane, filters | ✅ Done |
 | 2 | Data model: link Customers + Targets, actual vs target | ✅ Done |
-| 3 | Revenue Steering dashboard (3 sheets, master items, set analysis) | ⏳ Planned |
+| 3 | Revenue Steering dashboard (master items, monthly trend, set analysis) | ✅ Done |
 | 4 | Campaign adoption report | ⏳ Planned |
 | 5 | Storytelling: bookmarks, Qlik story, export to Excel / PowerPoint | ⏳ Planned |
 
@@ -174,9 +174,93 @@ Source: [`data/Shipping_Revenue_Practice_Data.xlsx`](data/Shipping_Revenue_Pract
 - Number formatting (percentages), custom sorting, grouped vs stacked charts
 - Action titles and layout checks for management readers
 
+---
+
 ## Project 3 — Revenue Steering dashboard
 
-*Coming soon.*
+**Goal:** turn the app into a reusable steering dashboard — consistent KPI definitions, a monthly view of actual vs target, and a customer view — answering *"When did we miss, why, and which customers matter most?"*
+
+### What I did
+
+1. **Created master items** — one central definition per KPI, reused in every chart ("one version of the truth"):
+
+   | Master item | Type | Definition |
+   |---|---|---|
+   | Revenue (USD) | Measure | `Sum(TEU * RatePerTEU_USD)` |
+   | Target revenue (USD) | Measure | `Sum(TargetRevenue_USD)` |
+   | Total TEU | Measure | `Sum(TEU)` |
+   | Avg revenue per TEU (USD) | Measure | `Sum(TEU * RatePerTEU_USD) / Sum(TEU)` |
+   | Variance vs target | Measure | `Sum(TEU * RatePerTEU_USD) / Sum(TargetRevenue_USD) - 1` |
+   | Month | Dimension | Booking month |
+
+2. **Monthly Trend sheet**
+   - Line chart: **actual vs target revenue by month** (Jan–Sep 2026).
+   - Line chart: **average revenue per TEU by month**, to separate the rate effect from the volume effect.
+3. **Customers sheet** — top-10 customer table with revenue, TEU, average rate and **reefer share**, built with **set analysis**:
+   ```
+   Sum({<CargoType={'Reefer'}>} TEU * RatePerTEU_USD) / Sum(TEU * RatePerTEU_USD)
+   ```
+   The set `{<CargoType={'Reefer'}>}` works like a selection inside the formula: the numerator counts only reefer revenue, regardless of what the user has clicked.
+4. Limited the table to the **top 10 by revenue**, sorted descending, and wrote **action titles** for every object.
+
+### Screenshots
+
+**Monthly Trend — actual vs target and rate per TEU**
+![Monthly Trend](screenshots/p3-monthly-trend.png)
+
+**Customers — top 10 with reefer share (set analysis)**
+![Customers](screenshots/p3-customers.png)
+
+### Results
+
+**Actual vs target by month**
+
+| Month | Variance | | Month | Variance |
+|---|---|---|---|---|
+| Jan | +3.3% | | Jun | −2.0% |
+| Feb | −2.4% | | **Jul** | **−4.5%** |
+| Mar | +1.4% | | Aug | +2.4% |
+| Apr | −1.0% | | Sep | +2.4% |
+| May | +1.1% | | | |
+
+**Top customers**
+
+| Customer | Revenue (USD) | Avg rate/TEU | Reefer share |
+|---|---|---|---|
+| Delta Auto Parts | 9.24M | 2,141 | 0.0% |
+| Kestrel Pharma | 8.53M | 1,669 | 52.6% |
+| Fjord Seafood | 8.21M | 1,777 | 52.1% |
+| Alpenfrost Foods | 7.24M | 1,738 | 54.5% |
+| Harbor Electronics | 5.88M | 1,316 | 0.0% |
+
+### Key insights
+
+- **July is the worst month (−4.5% vs target, ~$310k short)** — in peak season, exactly when it matters most. The year-to-date total (0.0%) hides this.
+- **The July miss is a volume problem, not a price problem.** The average rate peaks in July (~$1,914/TEU vs ~$1,470 in February), so revenue fell short because too few containers were shipped against a high target.
+- **The top 4 customers drive 60% of revenue** (33.2M of 55.1M), and the top 10 drive ~95%. That's a concentration risk: losing one key account would hurt a lot.
+- **Three of the top four customers are reefer-heavy (52–55% reefer share)**, so reefer capacity and equipment availability directly protect the most important revenue.
+
+### What went wrong and how I fixed it
+
+1. **Month axis showed "1/1/2026" instead of "Jan 2026".** The line chart treated the month as a *continuous date axis* and applied its own date format, ignoring the field's `MMM YYYY` format. Changing the master item didn't help, because the chart was still using the raw field. I rebuilt the chart with a **text dimension** and a sort expression that keeps date order:
+   ```
+   Dimension:  =Text(Date(MonthStart(Month), 'MMM YYYY'))
+   Sort by:    =Min(Month)   (ascending)
+   ```
+   *Lesson: text labels look right but sort alphabetically. Sort by the underlying date value instead.*
+2. **Cut-off axis titles** ("Revenu…, Target reven…"). I switched the y-axis to *labels only*, since the legend already names the lines.
+3. **Table sorted A→Z and showed all 15 customers.** I set the sort to Revenue descending and added a *Top 10* limitation on the Customer dimension.
+4. **Sanity check:** the table's total reefer share (**27.2%**) matches the reefer share I found by selection in Project 1, which confirms the set analysis formula is correct.
+
+### What I learned
+
+- Master items for consistent KPI definitions across sheets
+- Set analysis: calculating a fixed subset independent of user selections
+- Separating **volume vs rate effects** when explaining a revenue variance
+- Continuous vs discrete axes, text dimensions and sort-by-expression
+- Dimension limitations (Top N) and customer concentration analysis
+
+---
 
 ## Project 4 — Campaign adoption report
 
