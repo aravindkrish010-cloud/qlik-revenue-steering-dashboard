@@ -40,7 +40,7 @@ Source: [`data/Shipping_Revenue_Practice_Data.xlsx`](data/Shipping_Revenue_Pract
 | 1 | First app: KPIs, revenue by trade lane, filters | ✅ Done |
 | 2 | Data model: link Customers + Targets, actual vs target | ✅ Done |
 | 3 | Revenue Steering dashboard (master items, monthly trend, set analysis) | ✅ Done |
-| 4 | Campaign adoption report | ⏳ Planned |
+| 4 | Campaign adoption report | ✅ Done |
 | 5 | Storytelling: bookmarks, Qlik story, export to Excel / PowerPoint | ⏳ Planned |
 
 ---
@@ -264,7 +264,63 @@ Source: [`data/Shipping_Revenue_Practice_Data.xlsx`](data/Shipping_Revenue_Pract
 
 ## Project 4 — Campaign adoption report
 
-*Coming soon.*
+**Goal:** track the rollout of a new quotation tool to 195 sales reps in 5 regions (launched 6 July 2026) and answer: *How many reps use it now? Is adoption growing? Which regions need support?*
+
+### What I did
+
+1. Added the **CampaignAdoption** table (weekly data per region) to the data model, linked to Customers via **Region**. I ticked all four tables in *Add data* (Project 2 lesson) and checked *Unassociated tables: 0* before loading.
+2. Created two master measures:
+
+   | Master item | Definition |
+   |---|---|
+   | Adoption rate | `Sum(RepsUsingNewTool) / Sum(SalesReps)` |
+   | Adoption rate (latest week) | `Sum({<WeekStart={$(=Max(WeekStart))}>} RepsUsingNewTool) / Sum({<WeekStart={$(=Max(WeekStart))}>} SalesReps)` |
+
+3. Built a **Campaign Adoption** sheet:
+   - **3 KPIs** for the latest week: adoption rate, reps using the tool, quotes created via the tool.
+   - **Line chart:** weekly adoption trend. The week dimension `=Text(Date(WeekStart,'DD MMM'))` is sorted by `Min(WeekStart)`, using the same fix as in Project 3.
+   - **Horizontal bar chart:** adoption by region for the latest week, sorted, with value labels.
+
+### Screenshot
+
+**Campaign Adoption sheet**
+![Campaign Adoption](screenshots/p4-campaign-adoption.png)
+
+### Results
+
+| KPI (latest week, 28 Sep) | Value |
+|---|---|
+| Adoption rate | **84.1%** (from 15.9% in week 1) |
+| Reps using tool | 164 of 195 |
+| Quotes via tool | 1,405 per week (from 276 in week 1) |
+
+| Region | Adoption (latest week) | Team size |
+|---|---|---|
+| Europe | 91.7% | 60 |
+| North America | 91.4% | 35 |
+| Asia | 85.5% | 55 |
+| Middle East | **70.0%** | 20 |
+| Latin America | **64.0%** | 25 |
+
+### Key insights
+
+- **Adoption grew steadily from 16% to 84% in 13 weeks**, with no plateau yet, so the rollout is working.
+- **Latin America (64%) and the Middle East (70%) lag behind** Europe and North America (>90%). They are also the smallest teams, so targeted training for a handful of reps would close most of the gap.
+- **Usage is growing as well as reach:** weekly quotes via the tool rose about 5× (276 → 1,405).
+
+### What went wrong and how I fixed it
+
+1. **The "all weeks" trap.** My first bar chart used the plain adoption rate and showed Europe at 54%. That figure sums all 13 weeks, so the 16% from July is mixed with 90% from September. It's a historical average, not today's status, and it would mislead a manager. I fixed it with **set analysis and dollar expansion**: `$(=Max(WeekStart))` first calculates the latest week, then the set `{<WeekStart={...}>}` restricts the calculation to that week. It updates automatically when new weeks are loaded.
+   *Lesson: always ask "over what period is this number?" Snapshot metrics (headcount, adoption %) must not be summed across time.*
+2. **Excel dates loaded as numbers** (WeekStart = 46209). I formatted them in the chart with `Date()`, and used `Text()` + sort by `Min(WeekStart)` to avoid the continuous-axis issue from Project 3.
+3. **Cut-off region labels.** I switched the bar chart to horizontal and added value labels.
+
+### What I learned
+
+- Set analysis with **dollar expansion** (`$(=...)`) for dynamic, self-updating filters
+- The difference between **flow metrics** (revenue, quotes, which can be summed over time) and **snapshot metrics** (headcount, adoption rate, which can't)
+- Adoption tracking as a business case: reach (adoption %) vs usage (quotes)
+- Building a compact one-screen layout: KPIs on top, trend + breakdown below
 
 ## Project 5 — Storytelling and export
 
