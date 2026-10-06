@@ -374,8 +374,7 @@ reefer equipment.
 
 ### What went wrong and how I fixed it
 
-1. **A selection leaked into the next bookmark.** After creating bookmark 1, July *and* a clicked trade lane were still selected, so the Customers table showed only Transatlantic July revenue (2.14M). I now **clear selections before every bookmark** and check the selection bar before saving. I saved the key findings as bookmarks, checked the numbers in Excel with XLOOKUP and a pivot table, and summarised them in a 3-slide management summary.
-The main finding: Transatlantic was the best lane for the year (+2.1%) but had the biggest miss in July (−8%), which only showed up when I looked month by month.
+1. **A selection leaked into the next bookmark.** After creating bookmark 1, July *and* a clicked trade lane were still selected, so the Customers table showed only Transatlantic July revenue (2.14M). I now **clear selections before every bookmark** and check the selection bar before saving. I saved the key findings as bookmarks, checked the numbers in Excel with LOOKUP function and a pivot table, and summarised them in a 3-slide management summary. This is where I turned the raw data into actionable insights.
 2. **The share-of-revenue formulas showed as text.** The column exported from Qlik was formatted as *Text*, so Excel stored `=B2/SUM(...)` as words and never calculated it. A quick test (`=1+1` in an empty cell) showed that Excel itself worked and the column format was the problem. I set the column to *General*, re-entered the formula, and then applied percentage format.
    *Lesson: with exported data, check cell formats before writing formulas.*
 3. **Reefer share showed 100% while Reefer was selected.** The numerator is fixed to reefer by set analysis, and the denominator follows the selection, so reefer ÷ reefer = 100%. It's correct behaviour, and a good reminder to know which parts of a formula respond to selections.
