@@ -95,7 +95,7 @@ Source: [`data/Shipping_Revenue_Practice_Data.xlsx`](data/Shipping_Revenue_Pract
 
 - Dimensions vs measures, and aggregation (`Sum`)
 - Writing expressions — multiply row by row first, then sum
-- Fixing data types with a calculated field
+- Fixing data types with a calculated field.Even Though Reefer is only about 20% of the containers but it shares 27% of the revenue, because each reefer earns about 35% more. So it's not just how many TEU we ship, the mix matters as much as volume.
 - Qlik's associative selections (green / white / grey)
 - Edit mode vs analysis mode; labels and sorting for management readers
 
