@@ -236,9 +236,12 @@ lanes cancelled each other out, so the total hides the story. We always have to 
 
 ### Key insights
 
-- **July is the worst month (−4.5% vs target, ~$310k short)** — in peak season, exactly when it matters most. The year-to-date total (0.0%) hides this.
+- **July is the worst month (−4.5% vs target, ~$310k short)** — in peak season, exactly when it matters most. The year-to-date total (0.0%) hides this. July missed target by 4.5%. My first guess was pricing, but the average rate was actually the highest in July, around
+$1,900 per container. So it wasn't price, it was volume: not enough containers against a high peak-season target.
 - **The July miss is a volume problem, not a price problem.** The average rate peaks in July (~$1,914/TEU vs ~$1,470 in February), so revenue fell short because too few containers were shipped against a high target.
-- **The top 4 customers drive 60% of revenue** (33.2M of 55.1M), and the top 10 drive ~95%. That's a concentration risk: losing one key account would hurt a lot.
+- **The top 4 customers drive 60% of revenue** (33.2M of 55.1M), and the top 10 drive ~95%. That's a concentration risk: losing one key account would hurt a lot.Four customers make up 60% of revenue, and three of them ship about half their business as reefer. That's a risk,
+because losing one customer hurts a lot, but it also tells you where to focus: protecting those accounts and having enough
+reefer equipment.
 - **Three of the top four customers are reefer-heavy (52–55% reefer share)**, so reefer capacity and equipment availability directly protect the most important revenue.
 
 ### What went wrong and how I fixed it
@@ -371,7 +374,8 @@ lanes cancelled each other out, so the total hides the story. We always have to 
 
 ### What went wrong and how I fixed it
 
-1. **A selection leaked into the next bookmark.** After creating bookmark 1, July *and* a clicked trade lane were still selected, so the Customers table showed only Transatlantic July revenue (2.14M). I now **clear selections before every bookmark** and check the selection bar before saving.
+1. **A selection leaked into the next bookmark.** After creating bookmark 1, July *and* a clicked trade lane were still selected, so the Customers table showed only Transatlantic July revenue (2.14M). I now **clear selections before every bookmark** and check the selection bar before saving. I saved the key findings as bookmarks, checked the numbers in Excel with XLOOKUP and a pivot table, and summarised them in a 3-slide management summary.
+The main finding: Transatlantic was the best lane for the year (+2.1%) but had the biggest miss in July (−8%), which only showed up when I looked month by month.
 2. **The share-of-revenue formulas showed as text.** The column exported from Qlik was formatted as *Text*, so Excel stored `=B2/SUM(...)` as words and never calculated it. A quick test (`=1+1` in an empty cell) showed that Excel itself worked and the column format was the problem. I set the column to *General*, re-entered the formula, and then applied percentage format.
    *Lesson: with exported data, check cell formats before writing formulas.*
 3. **Reefer share showed 100% while Reefer was selected.** The numerator is fixed to reefer by set analysis, and the denominator follows the selection, so reefer ÷ reefer = 100%. It's correct behaviour, and a good reminder to know which parts of a formula respond to selections.
