@@ -95,7 +95,7 @@ Source: [`data/Shipping_Revenue_Practice_Data.xlsx`](data/Shipping_Revenue_Pract
 
 - Dimensions vs measures, and aggregation (`Sum`)
 - Writing expressions — multiply row by row first, then sum
-- Fixing data types with a calculated field.Even Though Reefer is only about 20% of the containers but it shares 27% of the revenue, because each reefer earns about 35% more. So it's not just how many TEU we ship, the mix matters as much as volume.
+- Fixing data types with a calculated field.
 - Qlik's associative selections (green / white / grey)
 - Edit mode vs analysis mode; labels and sorting for management readers
 
@@ -158,8 +158,7 @@ Source: [`data/Shipping_Revenue_Practice_Data.xlsx`](data/Shipping_Revenue_Pract
 
 ### What went wrong and how I fixed it
 
-1. **A table disappeared before loading.** When adding Customers and Targets from the same Excel file, I unticked Bookings because it was "already loaded". Overall we were exactly on target. But by Trade lane it ranged from plus 2.1% to minus 3.2%. The good and bad
-lanes cancelled each other out, so the total hides the story. We always have to go one layer deep to get the real insights. In Qlik's *Add data* dialog, the ticked tables define *everything* the app will contain from that file — unticking means **delete**. The Data manager showed Bookings as *"deleted, will be removed at next reload"*. Because changes only apply on **Load data**, nothing was lost yet: I re-added all three tables, verified the field count (10 incl. the calculated `BookingMonth`), and only then loaded.
+1. **A table disappeared before loading.** When adding Customers and Targets from the same Excel file, I unticked Bookings because it was "already loaded". In Qlik's *Add data* dialog, the ticked tables define *everything* the app will contain from that file — unticking means **delete**. The Data manager showed Bookings as *"deleted, will be removed at next reload"*. Because changes only apply on **Load data**, nothing was lost yet: I re-added all three tables, verified the field count (10 incl. the calculated `BookingMonth`), and only then loaded.
    *Lesson: always review pending changes before loading — like reviewing a diff before deploying.*
 2. **Fields were renamed automatically** (`Bookings.Customer`, `Bookings.LaneMonthKey`). Qlik *qualifies* field names so tables don't link without approval. I applied the recommended associations explicitly and confirmed *Unassociated tables: 0*.
 3. **Stacked vs grouped bars.** Switching the chart to horizontal accidentally made it **stacked**, adding actual + target into a meaningless 35M+ bar. Fixed by switching back to **grouped**.
@@ -374,7 +373,7 @@ reefer equipment.
 
 ### What went wrong and how I fixed it
 
-1. **A selection leaked into the next bookmark.** After creating bookmark 1, July *and* a clicked trade lane were still selected, so the Customers table showed only Transatlantic July revenue (2.14M). I now **clear selections before every bookmark** and check the selection bar before saving. I saved the key findings as bookmarks, checked the numbers in Excel with LOOKUP function and a pivot table, and summarised them in a 3-slide management summary. This is where I turned the raw data into actionable insights.
+1. **A selection leaked into the next bookmark.** After creating bookmark 1, July *and* a clicked trade lane were still selected, so the Customers table showed only Transatlantic July revenue (2.14M). I now **clear selections before every bookmark** and check the selection bar before saving. 
 2. **The share-of-revenue formulas showed as text.** The column exported from Qlik was formatted as *Text*, so Excel stored `=B2/SUM(...)` as words and never calculated it. A quick test (`=1+1` in an empty cell) showed that Excel itself worked and the column format was the problem. I set the column to *General*, re-entered the formula, and then applied percentage format.
    *Lesson: with exported data, check cell formats before writing formulas.*
 3. **Reefer share showed 100% while Reefer was selected.** The numerator is fixed to reefer by set analysis, and the denominator follows the selection, so reefer ÷ reefer = 100%. It's correct behaviour, and a good reminder to know which parts of a formula respond to selections.
