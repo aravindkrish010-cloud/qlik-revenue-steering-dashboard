@@ -177,7 +177,7 @@ more. So it's not just how many boxes we ship, but which kind: the mix matters.
 
 ---
 
-## Project 3 — Revenue Steering dashboard
+## Project 3 — Sales Steering dashboard
 
 **Goal:** turn the app into a reusable steering dashboard — consistent KPI definitions, a monthly view of actual vs target, and a customer view — answering *"When did we miss, why, and which customers matter most?"*
 
