@@ -1,4 +1,4 @@
-# Qlik Sense Revenue Steering Dashboard
+# Qlik Sense Sales Analytics Dashboard
 
 Hands-on learning project: building a revenue steering dashboard for a container shipping business in **Qlik Sense (Qlik Cloud)** — from raw data to management-ready insights.
 
